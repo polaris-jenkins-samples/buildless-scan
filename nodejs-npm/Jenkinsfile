@@ -1,0 +1,30 @@
+@Library('blackduck-logs-publisher') _
+
+pipeline {
+    agent { label 'mac-sh' }
+
+    stages {
+
+        stage("polaris-buildless-scan") {
+            steps {
+                script {
+                    dir('nodejs-npm') {
+                        security_scan polaris_assessment_types: 'SAST,SCA', polaris_waitForScan: true, product: 'polaris'
+
+                        
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            pushJenkinsLogsToGitHub([
+                githubOrg: 'polaris-jenkins-samples',
+                repoName: 'buildless-scan',
+                retentionCount: 5
+            ])
+        }
+    }
+}
